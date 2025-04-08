@@ -1,33 +1,37 @@
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from Crypto.Random import get_random_bytes
-import base64
+import binascii
 
-# AES key must be 16, 24, or 32 bytes long
-key = get_random_bytes(16)  # 128-bit AES key
+# Function to encrypt data
+def aes_encrypt(data, key):
+    cipher = AES.new(key, AES.MODE_CBC)  # Using CBC mode for AES encryption
+    ciphertext = cipher.encrypt(pad(data.encode(), AES.block_size))  # Pad data before encryption
+    return cipher.iv + ciphertext  # Return IV concatenated with ciphertext
 
-# IV for CBC mode (always 16 bytes for AES)
-iv = get_random_bytes(16)
+# Function to decrypt data
+def aes_decrypt(encrypted_data, key):
+    iv = encrypted_data[:16]  # Extract the IV (first 16 bytes)
+    ciphertext = encrypted_data[16:]  # Extract the ciphertext
+    cipher = AES.new(key, AES.MODE_CBC, iv)  # Reinitialize cipher with the same key and IV
+    decrypted_data = unpad(cipher.decrypt(ciphertext), AES.block_size)  # Unpad the decrypted data
+    return decrypted_data.decode()
 
-# Your plaintext
-plaintext = "This is a secret message."
+# Main function to allow custom input for encryption and decryption
+def main():
+    key = get_random_bytes(16)  # AES key (16 bytes = 128-bit key)
+    print(f"Using key: {binascii.hexlify(key).decode()}")  # Print key in hex (for reference)
 
-# Encrypt
-cipher = AES.new(key, AES.MODE_CBC, iv)
-ciphertext = cipher.encrypt(pad(plaintext.encode(), AES.block_size))
+    # Encrypt data
+    data = input("Enter the string to encrypt: ")  # Input data to encrypt
+    encrypted_data = aes_encrypt(data, key)
+    print("Encrypted:", binascii.hexlify(encrypted_data).decode())  # Show the encrypted data in hex
 
-# Encode ciphertext and IV for safe transmission/storage
-ciphertext_b64 = base64.b64encode(ciphertext).decode()
-iv_b64 = base64.b64encode(iv).decode()
-key_b64 = base64.b64encode(key).decode()
+    # Decrypt data
+    encrypted_input = input("Enter the encrypted string to decrypt (in hex): ")  # Input encrypted data in hex
+    encrypted_data = binascii.unhexlify(encrypted_input)  # Convert hex back to bytes
+    decrypted_data = aes_decrypt(encrypted_data, key)  # Decrypt the data
+    print("Decrypted:", decrypted_data)  # Show decrypted data
 
-# Decrypt
-cipher_dec = AES.new(base64.b64decode(key_b64), AES.MODE_CBC, base64.b64decode(iv_b64))
-decrypted = unpad(cipher_dec.decrypt(base64.b64decode(ciphertext_b64)), AES.block_size).decode()
-
-# Output
-print("Original:", plaintext)
-print("Key (base64):", key_b64)
-print("IV (base64):", iv_b64)
-print("Encrypted (base64):", ciphertext_b64)
-print("Decrypted:", decrypted)
+if __name__ == "__main__":
+    main()

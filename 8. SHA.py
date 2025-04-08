@@ -1,7 +1,7 @@
 import hashlib
 
 # Message to be hashed
-message = "Hello Shreyansh, this is a SHA hash!".encode()
+message = input("Enter the message you want to hash: ").encode()
 
 # SHA-1
 sha1_hash = hashlib.sha1(message).hexdigest()

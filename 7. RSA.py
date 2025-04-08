@@ -1,31 +1,31 @@
 from Crypto.PublicKey import RSA
 from Crypto.Cipher import PKCS1_OAEP
-from Crypto.Random import get_random_bytes
 
-# Generate RSA key pair
-key = RSA.generate(2048)
-private_key = key.export_key()
-public_key = key.publickey().export_key()
+def generate_rsa_keys():
+    key = RSA.generate(2048)
+    private_key = key.export_key()
+    public_key = key.publickey().export_key()
+    return private_key, public_key
 
-print("🔑 Private Key:")
-print(private_key.decode())
+def encrypt_message(public_key, message):
+    recipient_key = RSA.import_key(public_key)
+    cipher_rsa = PKCS1_OAEP.new(recipient_key)
+    return cipher_rsa.encrypt(message.encode())
 
-print("\n🔓 Public Key:")
-print(public_key.decode())
+def decrypt_message(private_key, ciphertext):
+    private_key_obj = RSA.import_key(private_key)
+    cipher_rsa = PKCS1_OAEP.new(private_key_obj)
+    return cipher_rsa.decrypt(ciphertext).decode()
 
-# Encrypt a message using the public key
-message = b'Hello Shreyansh, this is RSA encryption!'
-recipient_key = RSA.import_key(public_key)
-cipher_rsa = PKCS1_OAEP.new(recipient_key)
-ciphertext = cipher_rsa.encrypt(message)
+def main():
+    private_key, public_key = generate_rsa_keys()
+    print("\n🔑 Private Key:\n", private_key.decode())
+    print("\n🔓 Public Key:\n", public_key.decode())
+    message = input("\nEnter the message you want to encrypt: ")
+    ciphertext = encrypt_message(public_key, message)
+    print("\n🔐 Encrypted message:\n", ciphertext)
+    decrypted_message = decrypt_message(private_key, ciphertext)
+    print("\n📬 Decrypted message:\n", decrypted_message)
 
-print("\n🔐 Encrypted message (ciphertext):")
-print(ciphertext)
-
-# Decrypt the message using the private key
-private_key_obj = RSA.import_key(private_key)
-cipher_rsa = PKCS1_OAEP.new(private_key_obj)
-decrypted_message = cipher_rsa.decrypt(ciphertext)
-
-print("\n📬 Decrypted message:")
-print(decrypted_message.decode())
+if __name__ == "__main__":
+    main()

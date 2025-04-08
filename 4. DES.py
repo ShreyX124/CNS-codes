@@ -2,27 +2,25 @@ from Crypto.Cipher import DES
 from Crypto.Util.Padding import pad, unpad
 import base64
 
-# DES key must be exactly 8 bytes
-key = b'8bytekey'
+def encrypt(plaintext, key):
+    cipher = DES.new(key, DES.MODE_ECB)
+    return base64.b64encode(cipher.encrypt(pad(plaintext.encode(), DES.block_size))).decode()
 
-# Message to encrypt
-plaintext = "HelloWorld"  # any string
+def decrypt(ciphertext_b64, key):
+    cipher = DES.new(key, DES.MODE_ECB)
+    return unpad(cipher.decrypt(base64.b64decode(ciphertext_b64)), DES.block_size).decode()
 
-# Create cipher
-cipher = DES.new(key, DES.MODE_ECB)
-
-# Padding plaintext to be multiple of 8 bytes
-padded_text = pad(plaintext.encode(), DES.block_size)
-
-# Encrypt
-ciphertext = cipher.encrypt(padded_text)
-ciphertext_b64 = base64.b64encode(ciphertext).decode()
-
-# Decrypt
-decipher = DES.new(key, DES.MODE_ECB)
-decrypted = unpad(decipher.decrypt(ciphertext), DES.block_size).decode()
-
-# Output
-print("Original:", plaintext)
-print("Encrypted (base64):", ciphertext_b64)
-print("Decrypted:", decrypted)
+if __name__ == "__main__":
+    key = input("Enter 8-byte key: ").encode()
+    if len(key) == 8:
+        plaintext = input("Enter plaintext: ")
+        encrypted_text = encrypt(plaintext, key)
+        print(f"Encrypted: {encrypted_text}")
+        encrypted_text = input("Enter ciphertext to decrypt: ")
+        key = input("Enter 8-byte key: to decode ").encode()
+        if len(key) == 8:
+            print(f"Decrypted: {decrypt(encrypted_text, key)}")
+        else:
+            print("Key must be exactly 8 bytes.")
+    else:
+        print("Key must be exactly 8 bytes.")
