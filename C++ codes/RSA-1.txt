@@ -1,0 +1,50 @@
+import java.security.*;
+import javax.crypto.Cipher;
+import java.util.Base64;
+
+public class SimpleRSA {
+    
+    private static KeyPair generateKeyPair() throws NoSuchAlgorithmException {
+        KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+        keyGen.initialize(2048); // Key size (2048 bits for security)
+        return keyGen.generateKeyPair();
+    }
+
+    private static String encrypt(String message, PublicKey publicKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.ENCRYPT_MODE, publicKey);
+        byte[] encryptedBytes = cipher.doFinal(message.getBytes());
+        return Base64.getEncoder().encodeToString(encryptedBytes);
+    }
+
+    private static String decrypt(String encryptedMessage, PrivateKey privateKey) throws Exception {
+        Cipher cipher = Cipher.getInstance("RSA");
+        cipher.init(Cipher.DECRYPT_MODE, privateKey);
+        byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(encryptedMessage));
+        return new String(decryptedBytes);
+    }
+
+    public static void main(String[] args) {
+        try {
+            // Step 1: Generate RSA key pair
+            KeyPair keyPair = generateKeyPair();
+            PublicKey publicKey = keyPair.getPublic();
+            PrivateKey privateKey = keyPair.getPrivate();
+
+            System.out.println("Public Key: " + Base64.getEncoder().encodeToString(publicKey.getEncoded()));
+            System.out.println("Private Key: " + Base64.getEncoder().encodeToString(privateKey.getEncoded()));
+
+            // Step 2: Encrypt a message
+            String message = "Hello, RSA!";
+            String encryptedMessage = encrypt(message, publicKey);
+            System.out.println("\nEncrypted Message: " + encryptedMessage);
+
+            // Step 3: Decrypt the message
+            String decryptedMessage = decrypt(encryptedMessage, privateKey);
+            System.out.println("Decrypted Message: " + decryptedMessage);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+}
