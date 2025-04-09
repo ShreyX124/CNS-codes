@@ -1,37 +1,26 @@
-def encrypt_caesar(text, shift):
-    result = ""
-    for ch in text:
-        if ch.islower():
-            result += chr((ord(ch) - ord('a') + shift) % 26 + ord('a'))
-        elif ch.isupper():
-            result += chr((ord(ch) - ord('A') + shift) % 26 + ord('A'))
-        else:
-            result += ch
-    return result
-
-def decrypt_all_shifts(cipher_text, original_text):
-    for i in range(26):
+def find_shift(plain_text, encrypted_text):
+    for shift in range(26):
         decrypted = ""
-        for ch in cipher_text:
+        for ch in encrypted_text:
             if ch == " ":
                 decrypted += " "
             elif ch.isupper():
-                decrypted += chr((ord(ch) - ord('A') - i + 26) % 26 + ord('A'))
+                decrypted += chr((ord(ch) - ord('A') - shift + 26) % 26 + ord('A'))
             elif ch.islower():
-                decrypted += chr((ord(ch) - ord('a') - i + 26) % 26 + ord('a'))
+                decrypted += chr((ord(ch) - ord('a') - shift + 26) % 26 + ord('a'))
             else:
                 decrypted += ch
-        print(f"Shift {i}: {decrypted}")
-        if decrypted == original_text:
-            print(f"Correct shift is: {i}")
-            return
-    print("Correct shift not found")
+        if decrypted == plain_text:
+            return shift
+    return None
 
 # === Main Execution ===
-original_text = input("Enter the plain text: ")
-shift = int(input("Enter the desired shift: "))
+plain_text = input("Enter the plain text: ")
+encrypted_text = input("Enter the encrypted text: ")
 
-encrypted_text = encrypt_caesar(original_text, shift)
-print("Encrypted text:", encrypted_text)
+shift = find_shift(plain_text, encrypted_text)
 
-decrypt_all_shifts(encrypted_text, original_text)
+if shift is not None:
+    print(f"The correct Caesar shift is: {shift}")
+else:
+    print("No valid shift found that matches the encrypted text to the plain text.")
